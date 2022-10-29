@@ -1,43 +1,40 @@
 import { Body, Controller, Delete, Get, Param, Put } from "@nestjs/common";
+import { Tarefa } from "./tarefa.entity";
+import { TarefaService } from "./tarefa.service";
+
 
 @Controller()
-export class tarefaController {
+export class TarefaController {
 
-    // tarefaLista = ['tarefa 01', 'tarefa 02' ];
-
-    tarefaLista = [];      //(codigo: '' , descrição)
-
-    //@Get("/tarefa")
-    //listaTarefa() {
-    // return ['tarefa 01, tarefa 02'];
+    constructor(
+        private tarefaService : TarefaService
+    ) {}
+    
     @Get("/tarefa")
-    listaTarefa() {
-        return this.tarefaLista
+     async listaTarefa(): Promise<Tarefa[]> {
+        return await this.tarefaService.findAll();
     }
 
     @Put("/tarefa")
-    salvartarefa(@Body() tarefa) {
-        let index = this.tarefaLista.findIndex(t => t.codigo == tarefa.codigo);
-        if (index >= 0) {
-            this.tarefaLista[index].descricao = tarefa.descricao;
-        } else {
-            tarefa.codigo = Math.random().toString(36);
-            this.tarefaLista.push(tarefa);
-        }
+    async salvarTarefa(@Body() tarefa) {
+
+        await this.tarefaService.salvar(tarefa);
+
         return "ok";
     }
 
     @Get("/tarefa/:codigo")
-    buscarPorCodigo(@Param() parametro) {                       //Param = Significa parametro
-        console.log(parametro.codigo);                         // pega o codigo da url
-        let tarefa = this.tarefaLista.find(tarefa => tarefa.codigo == parametro.codigo);
-        return tarefa;
+    async buscarPorCodigo(@Param() parametro): Promise<Tarefa> {                       //Param = Significa parametro
+        console.log(parametro.codigo); // pega o :codigo da url
+       
+        return await this.tarefaService.findById(parametro.codigo);
     }
 
     @Delete("/tarefa/:codigo")
-    excluirTarefa(@Param() parameto) {
-        let index = this.tarefaLista.findIndex(tarefa => tarefa.codigo == parameto.codigo);
-        this.tarefaLista.splice(index, 1);
+    async excluirTarefa(@Param() parameto) {
+       
+        await this.tarefaService.excluir(parameto.codigo);
+        
         return "ok";
     }
 }
